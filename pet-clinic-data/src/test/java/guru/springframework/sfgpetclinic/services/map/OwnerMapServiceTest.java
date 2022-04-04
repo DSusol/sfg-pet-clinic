@@ -87,4 +87,9 @@ class OwnerMapServiceTest {
 
         assertNull(owner);
     }
+
+    @Test
+    void findAllByLastName() {
+        //todo
+    }
 }

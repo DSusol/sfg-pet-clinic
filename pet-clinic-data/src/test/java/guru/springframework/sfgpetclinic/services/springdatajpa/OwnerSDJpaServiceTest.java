@@ -10,9 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,5 +95,19 @@ class OwnerSDJpaServiceTest {
         serviceUnderTest.deleteById(id);
 
         verify(ownerRepository).deleteById(anyLong());
+    }
+
+    @Test
+    void findAllByLastName() {
+        Owner owner2 = Owner.builder().lastName("AlsoTest").build();
+        List<Owner> owners = new ArrayList<>();
+        owners.add(owner);
+        owners.add(owner2);
+
+        when(ownerRepository.findAllByLastNameContainingIgnoreCase("Test")).thenReturn(owners);
+        List<Owner> checkedOwnerList = serviceUnderTest.findAllByLastName("Test");
+
+        assertEquals(2, checkedOwnerList.size());
+        verify(ownerRepository).findAllByLastNameContainingIgnoreCase(anyString());
     }
 }
