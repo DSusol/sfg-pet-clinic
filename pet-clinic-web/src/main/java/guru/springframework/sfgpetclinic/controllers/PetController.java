@@ -1,17 +1,18 @@
 package guru.springframework.sfgpetclinic.controllers;
 
 import guru.springframework.sfgpetclinic.model.Owner;
+import guru.springframework.sfgpetclinic.model.Pet;
 import guru.springframework.sfgpetclinic.model.PetType;
 import guru.springframework.sfgpetclinic.services.OwnerService;
 import guru.springframework.sfgpetclinic.services.PetService;
 import guru.springframework.sfgpetclinic.services.PetTypeService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @Controller
@@ -43,5 +44,43 @@ public class PetController {
     @InitBinder("owner")
     public void initOwnerBinder(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
+    }
+
+    @GetMapping("/pets/new")
+    public String initPetCreationForm(Owner owner, Model model) {
+
+        model.addAttribute("pet", Pet.builder().owner(owner).build());
+
+        return "pets/createOrUpdatePetForm";
+    }
+
+    @PostMapping("/pets/new")
+    public String processPetCreationForm(Owner owner, @Valid Pet pet, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "pets/createOrUpdatePetForm";
+        }
+        pet.setOwner(owner);
+        Pet savedPet = petService.save(pet);
+        owner.getPets().add(savedPet);
+        Owner savedOwner = ownerService.save(owner);
+        return "redirect:/owners/" + savedOwner.getId();
+    }
+
+    @GetMapping("/pets/{petId}/edit")
+    public String initPetUpdateForm(Owner owner, @PathVariable Long petId, Model model) {
+        model.addAttribute("pet", petService.findById(petId));
+        return "pets/createOrUpdatePetForm";
+    }
+
+    @PostMapping("/pets/{petId}/edit")
+    public String processPetUpdateForm(Owner owner, @PathVariable Long petId, @Valid Pet pet, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "pets/createOrUpdatePetForm";
+        }
+        pet.setOwner(owner);
+        Pet savedPet = petService.save(pet);
+        owner.getPets().add(savedPet);
+        Owner savedOwner = ownerService.save(owner);
+        return "redirect:/owners/" + savedOwner.getId();
     }
 }
